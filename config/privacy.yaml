@@ -1,0 +1,35 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# ENGINE PRIVACY / RETENTION CONTRACT — POLICY-NEUTRAL
+#
+# The open engine imposes NO hosted operational policy. These are conservative
+# engine DEFAULTS a deployment is expected to override for its own environment.
+# A finding or manifest item references documents by NAME and may quote only a
+# capped MINIMAL span to make the finding legible — never a reproduced paragraph.
+#
+# Load-bearing rule NEVER hardcode a hosted value here. The hosted
+# wilfredmorgan.com deployment sets concrete values (e.g. a 30-day TTL) in its
+# OWN deployment config — not in this engine file. 30 / 14 must never appear here.
+# ─────────────────────────────────────────────────────────────────────────────
+privacy_version: "1.0.0"
+
+# Span cap. The maximum verbatim source span that may survive into any
+# persisted prose (findings[].message, narrative, manifest items, render
+# contract). The judge prompt asks for at most this; a post-process scrub
+# guarantees it even when the model over-quotes. A span is capped when it exceeds
+# EITHER limit (words or chars); the overflow is elided with a marker.
+span_cap:
+  max_words: 15
+  max_chars: 120
+  elision_marker: "[…]"
+
+# Retention. The persisted DERIVED report (scores, band, capped findings,
+# manifest) self-expires. Conservative engine default + an ephemeral/no-persist
+# option. This is NOT a hosted policy — a deployment overrides ttl_seconds.
+retention:
+  # mode: "ttl"       -> persist the derived report, delete it past ttl_seconds.
+  #       "ephemeral" -> never persist; the report exists only for the live
+  #                      response (no-persist option for off-premises ICPs).
+  mode: ttl
+  # Conservative engine default: a short window (7 days). Deployment-overridable.
+  # Hosted policy values (30 / 14) are DEPLOYMENT config and must never live here.
+  ttl_seconds: 604800   # 7 days

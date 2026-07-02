@@ -1,0 +1,79 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# LOCKED, REPRODUCIBLE SCORING CONTRACT
+#
+# This file is the authoritative scoring contract for The Comprehension Standard.
+# It exposes explicit per-dimension weights, a minimum delta enforcing that
+# Cross-Document Consistency and Attributability stay the heaviest, the L1–L5
+# cut-lines, and the dual-run disagreement-arbitration rule. An identical corpus
+# scored under this contract replays to an identical band.
+#
+# Weights are intake-tunable, but any edit must preserve the heaviest-two
+# invariant (validated at load) — the false-high failure mode lives here.
+# ─────────────────────────────────────────────────────────────────────────────
+contract_version: "1.0.0"
+
+# Per-dimension weights (must sum to ~1.0). Cross-Document Consistency and
+# Attributability carry the heaviest weight — they are where a corpus
+# produces confident-wrong answers in production.
+weights:
+  cross_document_consistency: 0.22
+  attributability: 0.22
+  extractability_structure: 0.12
+  metadata_provenance: 0.12
+  freshness_versioning: 0.11
+  redundancy_uniqueness: 0.10
+  terminology_consistency: 0.11
+
+# The two heaviest dimensions must each outweigh every other dimension by at
+# least this delta (enforced at load; guards against silently down-weighting the
+# confident-wrong dimensions).
+heaviest_min_delta: 0.05
+heaviest_dimensions:
+  - cross_document_consistency
+  - attributability
+
+# How a dimension's deterministic and judge signals combine when both exist
+# (cross-doc, attributability, terminology). Dimensions with only a deterministic
+# signal use it directly.
+method_weights:
+  deterministic: 0.4
+  judge: 0.6
+
+# Overall-score cut-lines for the L1–L5 Context Readiness band (0..100).
+# band = highest band whose cut-line <= overall score; below L2 cut-line => L1.
+cut_lines:
+  L5: 85.0
+  L4: 70.0
+  L3: 55.0
+  L2: 40.0
+
+# A dimension scoring at or below this (0..100) is "low".
+low_threshold: 40.0
+
+# Critical-severity caps (the false-high guard): when a dimension carries a
+# HIGH-severity finding (e.g. a cross-document contradiction, or claims with no
+# traceable source), the dimension score is capped here regardless of the blend —
+# a deterministic floor cannot prop up a dimension the judge found broken. This is
+# what makes a planted defect drive the band DOWN, bounding the
+# confident-wrong worst output.
+critical_severity_caps:
+  cross_document_consistency: 35.0
+  attributability: 40.0
+
+# Band ceilings — a corpus cannot be called "AI-ready" while a dimension is broken,
+# no matter how high the weighted average is. This is the structural floor under the
+# headline dimensions (the confident-wrong guard): a single cross-document
+# contradiction cannot ride a high average into L5.
+band_ceilings:
+  # Any dimension at or below this caps the overall band at max_band.
+  any_dimension_at_or_below: {threshold: 40.0, max_band: L4}
+  # A HEAVIEST dimension (Cross-Doc Consistency / Attributability) at or below this
+  # caps the band lower still.
+  heaviest_dimension_at_or_below: {threshold: 40.0, max_band: L3}
+
+# Dual-run disagreement arbitration. "min" = take the lower of the two
+# judge passes per dimension (conservative; a defect caught in either pass counts).
+dual_run_arbitration: min
+
+# Rounding applied to every emitted score, so replays are bit-identical.
+score_decimals: 2

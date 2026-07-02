@@ -1,0 +1,10 @@
+# Development + CI dependencies.
+# Pulls in the reference-service requirements (which in turn pull in the core), so a
+# single `pip install -r requirements-dev.txt` provisions everything needed to run the
+# full test suite (engine core + reference-service example) plus lint/format/type gates.
+-r examples/reference-service/requirements.txt
+pytest>=8.0
+ruff>=0.6
+black>=24.0
+mypy>=1.11
+types-PyYAML>=6.0

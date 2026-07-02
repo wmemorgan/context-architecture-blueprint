@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "The Context Architecture Blueprint"
+abstract: >-
+  An open-source framework for auditing whether a document corpus is ready for AI:
+  cross-document contradiction detection, terminology-drift analysis, and L1–L5
+  comprehension banding — the Comprehension Standard as a runnable diagnostic.
+type: software
+authors:
+  - family-names: Morgan
+    given-names: Wilfred
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/wmemorgan/context-architecture-blueprint"
+keywords:
+  - ai-readiness
+  - llm-evaluation
+  - llm-as-judge
+  - rag
+  - context-engineering
+  - document-intelligence

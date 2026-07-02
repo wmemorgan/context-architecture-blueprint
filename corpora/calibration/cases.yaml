@@ -1,0 +1,45 @@
+# Two-sided calibration golden set: paired good and bad corpora that pin the
+# scoring gate — each planted defect must drive its band down, each good corpus
+# must clear its floor.
+#
+# The CI scoring gate fails on a MISSED BAD (a planted defect that did not drive
+# its dimension/band down) OR a PENALIZED GOOD (a genuinely good corpus banded
+# below its floor). Scored at reference_date 2026-06-28.
+reference_date: "2026-06-28"
+band_order: [L1, L2, L3, L4, L5]
+cases:
+  - name: good_strong
+    kind: good
+    path: good_strong
+    expected_min_band: L4
+
+  - name: good_modest
+    kind: good
+    path: good_modest
+    expected_min_band: L3
+
+  - name: bad_contradiction
+    kind: bad
+    path: bad_contradiction
+    expected_max_band: L3
+    must_flag: cross_document_consistency
+
+  - name: bad_missing_metadata
+    kind: bad
+    path: bad_missing_metadata
+    expected_max_band: L3
+    must_flag: metadata_provenance
+
+  - name: bad_stale
+    kind: bad
+    path: bad_stale
+    expected_max_band: L4
+    must_flag: freshness_versioning
+
+  # Anti-gaming (r11): high-quality padding around a single planted contradiction.
+  # Padding must NOT hide the defect — the contradiction is still caught.
+  - name: anti_gaming_padded_contradiction
+    kind: bad
+    path: anti_gaming
+    expected_max_band: L4
+    must_flag: cross_document_consistency

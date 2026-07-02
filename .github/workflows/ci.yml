@@ -1,0 +1,84 @@
+name: ci
+
+on:
+  push:
+    branches: [main, "build/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Lint, format, type & architecture guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dev deps
+        run: pip install -r requirements-dev.txt
+      - name: Format check (black)
+        run: black --check src tests examples
+      - name: Lint (ruff)
+        run: ruff check src tests examples
+      - name: Type check (mypy)
+        run: mypy
+      - name: Structural clean-architecture guard
+        run: python -m pytest tests/test_architecture_guard.py -q
+
+  tests:
+    name: Test suite (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dev deps
+        run: pip install -r requirements-dev.txt
+      - name: Run tests (engine core)
+        run: python -m pytest -q
+      - name: Run reference-service example tests
+        run: python -m pytest examples/reference-service/tests -q
+
+  calibration-and-canary:
+    name: Calibration + canary (blocking)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dev deps
+        run: pip install -r requirements-dev.txt
+      - name: Two-sided calibration gate
+        run: python -m pytest tests/test_calibration_gate.py tests/test_calibration_twosided_meta.py -q
+      - name: Canary sweep (no-retention + error path)
+        run: python -m pytest tests/test_ingestion_no_retention.py tests/test_canary_error_path.py -q
+
+  regression:
+    name: Regression suite (false-high / adversarial / abuse / repro / boundary)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dev deps
+        run: pip install -r requirements-dev.txt
+      - name: Regression suite
+        run: >
+          python -m pytest -q
+          tests/test_golden_path.py
+          tests/test_false_high.py
+          tests/test_adversarial_ingestion.py
+          examples/reference-service/tests/test_ingestion_security.py
+          tests/test_cost_cap.py
+          tests/test_concurrency_isolation.py
+          tests/test_reproducibility.py
+          tests/test_boundary.py
+          tests/test_live_judge.py

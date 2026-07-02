@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.env
+.DS_Store
+# Ephemeral ingestion scratch — never committed (no-retention posture)
+.scratch/
+/tmp_uploads/
+
+# Internal-process artifacts — quarantined for review; REMOVED via `git rm -r internal/` at the
+# public flip, NOT merely ignored. This rule only keeps NEW internal files from being tracked;
+# the files already committed here still require an explicit `git rm` at flip (see internal/PUBLIC_FLIP_CHECKLIST.md).
+internal/
