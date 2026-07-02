@@ -3,7 +3,7 @@
 # optional HTTP client; it pulls in NO web framework and NO provider SDK. The LLM
 # judge's provider client (e.g. `anthropic`) is lazy-imported only when a live judge
 # is selected, so the hermetic engine + test suite run without it.
-pyyaml>=6.0
+pyyaml>=6.0.3
 pydantic>=2.13.4
 httpx>=0.27
 
