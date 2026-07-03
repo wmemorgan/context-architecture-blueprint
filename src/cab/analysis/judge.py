@@ -154,7 +154,7 @@ class ClaudeJudge:
     #: argument nor the ``CAB_JUDGE_MODEL`` environment variable is set.
     MODEL = "claude-sonnet-4-6"
 
-    def __init__(self, model: str | None = None) -> None:
+    def __init__(self, model: str | None = None, client: Any | None = None) -> None:
         # Model resolution precedence (most to least specific):
         #   1. explicit ``model`` argument,
         #   2. the ``CAB_JUDGE_MODEL`` environment variable,
@@ -163,22 +163,63 @@ class ClaudeJudge:
         # to (a newer Sonnet, a different tier) via config, with no code change
         # and no change to the default behavior when the variable is unset.
         self.model = model or os.environ.get("CAB_JUDGE_MODEL") or self.MODEL
+        # An explicit client is injectable (tests, custom transport); otherwise a
+        # real Anthropic client is created lazily on first use.
+        self._client = client
 
-    def run(self, corpus: Corpus) -> JudgePass:  # pragma: no cover - needs a key + network
+    def _get_client(self) -> Any:
+        if self._client is not None:
+            return self._client
         try:
             import anthropic
-        except Exception as exc:
+        except Exception as exc:  # pragma: no cover - needs the optional dep
             raise RuntimeError("ClaudeJudge requires the 'anthropic' package") from exc
-        client = anthropic.Anthropic()
+        self._client = anthropic.Anthropic()
+        return self._client
+
+    def run(self, corpus: Corpus) -> JudgePass:
+        client = self._get_client()
         prompt = _build_judge_prompt(corpus)
-        msg = client.messages.create(
-            model=self.model,
-            temperature=0.0,
-            max_tokens=2000,
-            system=_JUDGE_SYSTEM,
-            messages=[{"role": "user", "content": prompt}],
-        )
+        request: dict[str, Any] = {
+            "model": self.model,
+            "max_tokens": 2000,
+            "system": _JUDGE_SYSTEM,
+            "messages": [{"role": "user", "content": prompt}],
+        }
+        # Send temperature=0.0 by default (preserves the reference calibration).
+        # Newer models deprecate the `temperature` parameter and reject the request
+        # with a 400; when that specific error is seen, retry once WITHOUT it so the
+        # judge stays forward-compatible. Behavior for models that accept
+        # temperature=0 is unchanged.
+        try:
+            msg = client.messages.create(temperature=0.0, **request)
+        except Exception as exc:
+            if not _is_temperature_unsupported_error(exc):
+                raise
+            msg = client.messages.create(**request)
         return _parse_judge_response("".join(b.text for b in msg.content if hasattr(b, "text")))
+
+
+def _is_temperature_unsupported_error(exc: Exception) -> bool:
+    """True when an API error indicates the model rejects the ``temperature`` parameter.
+
+    Some newer models deprecate ``temperature`` and reject a request that sets it with
+    a ``400`` whose message names the parameter (e.g. "temperature is deprecated for
+    this model" or "unsupported parameter: temperature"). This is detected from the
+    error's status code + message text so it does not depend on a specific SDK error
+    class or version, and it stays narrow: an unrelated 400 (or any other status) is
+    re-raised unchanged.
+    """
+    status = getattr(exc, "status_code", None)
+    if status is not None and status != 400:
+        return False
+    msg = str(getattr(exc, "message", "") or exc).lower()
+    if "temperature" not in msg:
+        return False
+    return any(
+        kw in msg
+        for kw in ("deprecat", "unsupported", "not supported", "does not support", "not permitted")
+    )
 
 
 def default_judge() -> Judge:
