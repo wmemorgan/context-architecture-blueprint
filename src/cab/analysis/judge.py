@@ -150,10 +150,19 @@ class ClaudeJudge:
     can inject the real judge through the same interface.
     """
 
+    #: Shipped default model, used only when neither an explicit ``model``
+    #: argument nor the ``CAB_JUDGE_MODEL`` environment variable is set.
     MODEL = "claude-sonnet-4-6"
 
     def __init__(self, model: str | None = None) -> None:
-        self.model = model or self.MODEL
+        # Model resolution precedence (most to least specific):
+        #   1. explicit ``model`` argument,
+        #   2. the ``CAB_JUDGE_MODEL`` environment variable,
+        #   3. the shipped default (``MODEL``).
+        # This lets a self-hoster point the judge at any model they have access
+        # to (a newer Sonnet, a different tier) via config, with no code change
+        # and no change to the default behavior when the variable is unset.
+        self.model = model or os.environ.get("CAB_JUDGE_MODEL") or self.MODEL
 
     def run(self, corpus: Corpus) -> JudgePass:  # pragma: no cover - needs a key + network
         try:

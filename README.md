@@ -102,7 +102,9 @@ adapters ship in the box, and you can add your own:
 - **`MockJudge`** (default) — deterministic, no key, no network. The full test suite and the
   `demo` command run on it.
 - **`ClaudeJudge`** — the reference judge (Claude), used automatically when an `ANTHROPIC_API_KEY`
-  is present in the environment.
+  is present in the environment. The model is configurable: pass `ClaudeJudge(model=...)`, or set
+  `CAB_JUDGE_MODEL` to pin any model you have access to (explicit argument wins over the env var,
+  which wins over the shipped default).
 - **Your own adapter** — implement one method (`run(corpus) -> JudgePass`) to target any
   OpenAI-compatible or other provider. See the
   [developer guide](docs/developer-guide.md#adding-a-judge-adapter).
