@@ -5,7 +5,7 @@
 # is selected, so the hermetic engine + test suite run without it.
 pyyaml>=6.0.3
 pydantic>=2.13.4
-httpx>=0.27
+httpx>=0.28.1
 
 # Optional, lazy-imported document parsers (not required for the hermetic engine):
 #   pypdf>=4.0          # PDF extraction
