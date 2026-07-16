@@ -6,4 +6,4 @@
 # deployment-neutrality: consumers of the library never install a web framework.
 -r ../../requirements.txt
 starlette>=0.37
-uvicorn>=0.29
+uvicorn>=0.51.0
