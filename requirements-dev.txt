@@ -4,7 +4,7 @@
 # full test suite (engine core + reference-service example) plus lint/format/type gates.
 -r examples/reference-service/requirements.txt
 pytest>=9.1.1
-ruff>=0.15.20
+ruff>=0.15.21
 black>=24.0
 mypy>=1.11
 types-PyYAML>=6.0.12.20260518
