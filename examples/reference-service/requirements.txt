@@ -1,0 +1,9 @@
+# Reference upload service (unsupported example) — runtime dependencies.
+#
+# The supported engine core comes from the repository-root requirements.txt; these
+# lines add ONLY the HTTP surface used by this illustrative service. Keeping the web
+# framework here (and out of the core requirements) preserves the engine's
+# deployment-neutrality: consumers of the library never install a web framework.
+-r ../../requirements.txt
+starlette>=0.37
+uvicorn>=0.29
