@@ -4,12 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "context-architecture-blueprint"
-version = "0.1.0"
+version = "0.1.2"
 description = "The Context Architecture Blueprint — a working instrument of The Comprehension Standard. Scores how AI-ready a knowledge corpus is across seven dimensions."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
 authors = [{ name = "Wilfred Morgan" }]
+# Keep in step with requirements.txt (tests/test_packaging.py checks this).
+dependencies = [
+    "pyyaml>=6.0.3",
+    "pydantic>=2.13.4",
+    "httpx>=0.27",
+]
 keywords = [
     "ai-readiness",
     "llm-evaluation",
@@ -38,8 +44,31 @@ Repository = "https://github.com/wmemorgan/context-architecture-blueprint"
 [project.scripts]
 cab = "cab.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+# The packages are listed explicitly so that the default config and the demo corpus, which live
+# at the repository root, also ship inside the wheel (tests/test_packaging.py keeps this list
+# complete).
+[tool.setuptools]
+packages = [
+    "cab",
+    "cab.analysis",
+    "cab.cost",
+    "cab.ingestion",
+    "cab.interfaces",
+    "cab.manifest",
+    "cab.report",
+    "cab.scoring",
+    "cab._config",
+    "cab._demo",
+]
+
+[tool.setuptools.package-dir]
+"" = "src"
+"cab._config" = "config"
+"cab._demo" = "corpora/demo"
+
+[tool.setuptools.package-data]
+"cab._config" = ["*.yaml"]
+"cab._demo" = ["*.md"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

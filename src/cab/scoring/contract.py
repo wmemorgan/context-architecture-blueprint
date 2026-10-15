@@ -10,12 +10,12 @@ Validation enforces the load-bearing invariants:
 
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 
 import yaml
 
 from cab import DIMENSIONS
+from cab._bundled import config_path
 
 
 @dataclass(frozen=True)
@@ -34,9 +34,7 @@ class ScoringContract:
 
 
 def default_contract_path() -> str:
-    here = os.path.dirname(os.path.abspath(__file__))
-    root = os.path.abspath(os.path.join(here, "..", "..", ".."))
-    return os.path.join(root, "config", "scoring_contract.yaml")
+    return config_path("scoring_contract.yaml")
 
 
 def load_contract(path: str | None = None) -> ScoringContract:

@@ -42,6 +42,10 @@ SCOPE_DISCLAIMER = (
 )
 
 
+class EmptyCorpus(ValueError):
+    """The corpus has no supported documents, so there is nothing to score."""
+
+
 def run_on_corpus(
     corpus: Corpus,
     *,
@@ -53,6 +57,8 @@ def run_on_corpus(
     privacy: PrivacyConfig | None = None,
     retention: RetentionPolicy | None = None,
 ) -> dict[str, Any]:
+    if len(corpus) == 0:
+        raise EmptyCorpus("no supported documents to analyze")
     privacy = privacy or load_privacy_config()
     retention = retention or privacy.retention
 

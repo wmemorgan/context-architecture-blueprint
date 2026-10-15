@@ -7,9 +7,13 @@ Readiness band. If you just want to run it, see the [Quickstart](../README.md#qu
 ## Install
 
 ```bash
+git clone https://github.com/wmemorgan/context-architecture-blueprint.git
+cd context-architecture-blueprint
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -e .
 ```
+
+To install without a clone: `pip install "git+https://github.com/wmemorgan/context-architecture-blueprint.git@v0.1.2"`.
 
 The core engine is dependency-light and needs no API key. The three semantic dimensions use a
 pluggable LLM judge; with no key present the engine uses a deterministic mock judge (see

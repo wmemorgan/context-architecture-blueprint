@@ -42,3 +42,16 @@ def test_caps_reject_oversized_upload():
     payload = {"files": [{"name": "big.md", "content_b64": big}]}
     r = client.post("/upload", json=payload)
     assert r.status_code == 413
+
+
+def test_upload_with_no_files_is_rejected():
+    r = client.post("/upload", json={"files": []})
+    assert r.status_code == 400
+    assert "band" not in r.json()
+
+
+def test_upload_of_unsupported_format_is_rejected():
+    png = base64.b64encode(b"\x89PNG\r\n").decode()
+    r = client.post("/upload", json={"files": [{"name": "logo.png", "content_b64": png}]})
+    assert r.status_code == 415
+    assert "unsupported format" in r.json()["error"]

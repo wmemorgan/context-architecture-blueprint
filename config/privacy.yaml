@@ -6,9 +6,8 @@
 # A finding or manifest item references documents by NAME and may quote only a
 # capped MINIMAL span to make the finding legible — never a reproduced paragraph.
 #
-# Load-bearing rule NEVER hardcode a hosted value here. The hosted
-# wilfredmorgan.com deployment sets concrete values (e.g. a 30-day TTL) in its
-# OWN deployment config — not in this engine file. 30 / 14 must never appear here.
+# Load-bearing rule: NEVER hardcode a hosted value here. A hosted deployment sets
+# its concrete values in its OWN deployment config — not in this engine file.
 # ─────────────────────────────────────────────────────────────────────────────
 privacy_version: "1.0.0"
 

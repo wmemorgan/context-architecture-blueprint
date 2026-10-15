@@ -2,7 +2,7 @@ name: ci
 
 on:
   push:
-    branches: [main, "build/**"]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -82,3 +82,28 @@ jobs:
           tests/test_reproducibility.py
           tests/test_boundary.py
           tests/test_live_judge.py
+
+  package:
+    name: Package install smoke (wheel)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Build the wheel
+        run: |
+          pip install build
+          python -m build --wheel
+      - name: Install the wheel into a clean environment
+        run: |
+          python -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install dist/*.whl
+      - name: Run the CLI from outside the repository
+        working-directory: ${{ runner.temp }}
+        run: |
+          "$RUNNER_TEMP/venv/bin/cab" demo
+          mkdir corpus
+          printf '# Refunds\nRefunds are issued within 30 days.\n' > corpus/a.md
+          printf '# Returns\nRefunds are issued within 14 days.\n' > corpus/b.md
+          "$RUNNER_TEMP/venv/bin/cab" analyze corpus

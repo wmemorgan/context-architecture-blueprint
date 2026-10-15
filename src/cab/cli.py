@@ -9,6 +9,7 @@ This is a thin adapter over :mod:`cab.pipeline`; all analysis lives in the libra
 
 from __future__ import annotations
 
+import os
 import sys
 from collections.abc import Sequence
 from typing import Any
@@ -32,17 +33,32 @@ def main(argv: Sequence[str] | None = None) -> int:
     if cmd == "demo":
         from cab.pipeline import run_demo
 
+        report = run_demo()
         print("Demo analysis complete.")
-        _print_summary(run_demo())
+        _print_summary(report)
         return 0
     if cmd == "analyze":
         if len(args) < 2:
             print("usage: analyze DIR", file=sys.stderr)
             return 2
-        from cab.pipeline import run_on_directory
+        from cab.ingestion.parsers import SUPPORTED_EXTS, ParserUnavailable
+        from cab.pipeline import EmptyCorpus, run_on_directory
 
+        path = args[1]
+        if not os.path.isdir(path):
+            print(f"error: not a directory: {path}", file=sys.stderr)
+            return 2
+        try:
+            report = run_on_directory(path)
+        except EmptyCorpus:
+            exts = ", ".join(f".{e}" for e in SUPPORTED_EXTS)
+            print(f"error: no supported documents in {path} (supported: {exts})", file=sys.stderr)
+            return 2
+        except ParserUnavailable as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
         print("Analysis complete.")
-        _print_summary(run_on_directory(args[1]))
+        _print_summary(report)
         return 0
     print(f"unknown command: {cmd}", file=sys.stderr)
     return 2

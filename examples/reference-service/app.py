@@ -77,9 +77,15 @@ async def upload(request: Request) -> JSONResponse:
         body["degraded"] = "rate-limit-or-spend-ceiling → demo mode"
         return JSONResponse(body, status_code=429)
 
-    from cab.pipeline import run_on_files
+    from cab.ingestion.parsers import ParserUnavailable
+    from cab.pipeline import EmptyCorpus, run_on_files
 
-    report = run_on_files(files, email=payload.get("email"))
+    try:
+        report = run_on_files(files, email=payload.get("email"))
+    except ParserUnavailable as exc:
+        return JSONResponse({"error": str(exc)}, status_code=415)
+    except EmptyCorpus:
+        return JSONResponse({"error": "no supported documents to analyze"}, status_code=400)
     COST_GUARD.charge(float(len(files)))
     return JSONResponse(_public_view(report))
 

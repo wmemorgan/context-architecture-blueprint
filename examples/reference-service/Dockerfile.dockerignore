@@ -1,0 +1,15 @@
+# Build-context exclusions for examples/reference-service/Dockerfile (BuildKit reads
+# <Dockerfile>.dockerignore). The image copies only requirements, src, corpora, config and app.py.
+.git
+.github
+.venv
+venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+dist
+build
+**/*.egg-info
+tests

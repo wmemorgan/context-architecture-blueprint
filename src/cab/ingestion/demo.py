@@ -1,22 +1,20 @@
 # SPDX-License-Identifier: MIT
 """Demo-mode loader — runs the full analysis over a bundled sample corpus with
 **no upload**. The sample corpus lives in corpora/demo/ and ships with
-the repo, so the artifact is clickable for a reviewer with zero friction.
+the repo and inside the installed package, so the demo runs with zero setup.
 """
 
 from __future__ import annotations
 
 import os
 
+from cab._bundled import demo_corpus_dir
 from cab.ingestion.loader import ingest_directory
 from cab.models import Corpus
 
 
 def demo_corpus_path() -> str:
-    # repo_root/corpora/demo  (this file is src/cab/ingestion/demo.py)
-    here = os.path.dirname(os.path.abspath(__file__))
-    root = os.path.abspath(os.path.join(here, "..", "..", ".."))
-    return os.path.join(root, "corpora", "demo")
+    return demo_corpus_dir()
 
 
 def load_demo_corpus() -> Corpus:

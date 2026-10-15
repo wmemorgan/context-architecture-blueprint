@@ -21,13 +21,14 @@ byte-for-byte unchanged, so the scrub never mangles non-quoting text.
 
 from __future__ import annotations
 
-import os
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any
 
 import yaml
+
+from cab._bundled import config_path
 
 
 @dataclass(frozen=True)
@@ -55,9 +56,7 @@ class PrivacyConfig:
 
 
 def default_privacy_path() -> str:
-    here = os.path.dirname(os.path.abspath(__file__))
-    root = os.path.abspath(os.path.join(here, "..", ".."))
-    return os.path.join(root, "config", "privacy.yaml")
+    return config_path("privacy.yaml")
 
 
 # A hosted retention value must never be baked into the engine (deployment config, not engine default).

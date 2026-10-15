@@ -5,8 +5,10 @@ explicit 'cannot assess', and must NEVER crash or return a misleadingly-high ban
 
 from datetime import date
 
+import pytest
+
 from cab.models import Corpus, Document
-from cab.pipeline import run_on_corpus
+from cab.pipeline import EmptyCorpus, run_on_corpus
 
 REF = date(2026, 6, 28)
 BANDS = ("L1", "L2", "L3", "L4", "L5")
@@ -20,14 +22,13 @@ def _band_ok(rep):
     return rep["band"] in BANDS and len(rep["dimension_scores"]) == 7
 
 
-def test_h_empty_corpus_does_not_crash():
-    rep = run_on_corpus(Corpus(documents=[], source="empty"), reference_date=REF)
-    assert _band_ok(rep)
-    # An empty corpus must not be called AI-ready.
-    assert rep["band"] != "L5"
+def test_empty_corpus_is_refused_not_scored():
+    # Nothing to analyze is an input error, never a readiness band.
+    with pytest.raises(EmptyCorpus):
+        run_on_corpus(Corpus(documents=[], source="empty"), reference_date=REF)
 
 
-def test_h_single_document():
+def test_single_document():
     rep = run_on_corpus(
         Corpus(
             documents=[
@@ -45,7 +46,7 @@ def test_h_single_document():
     assert _band_ok(rep)
 
 
-def test_h_all_identical_documents_redundancy_low():
+def test_all_identical_documents_redundancy_low():
     body = "# Same\n\nIdentical content repeated across files, per the team."
     docs = [_doc(f"dup{i}.md", body, source="t", date="2026-06-01") for i in range(5)]
     rep = run_on_corpus(Corpus(documents=docs, source="identical"), reference_date=REF)
@@ -53,7 +54,7 @@ def test_h_all_identical_documents_redundancy_low():
     assert rep["dimensions"]["redundancy_uniqueness"]["score"] <= 50.0
 
 
-def test_h_one_enormous_document():
+def test_one_enormous_document():
     big = "# Big\n\n" + ("All systems nominal. " * 200000)  # ~4MB of text
     rep = run_on_corpus(
         Corpus(documents=[_doc("huge.md", big, source="t", date="2026-06-01")], source="huge"),
@@ -62,7 +63,7 @@ def test_h_one_enormous_document():
     assert _band_ok(rep)
 
 
-def test_h_all_images_no_extractable_text():
+def test_all_images_no_extractable_text():
     docs = [
         Document(
             name=f"img{i}.pdf",
@@ -80,7 +81,7 @@ def test_h_all_images_no_extractable_text():
     assert rep["band"] != "L5"
 
 
-def test_h_non_english_corpus():
+def test_non_english_corpus():
     docs = [
         _doc(
             "de.md",
@@ -99,7 +100,7 @@ def test_h_non_english_corpus():
     assert _band_ok(rep)
 
 
-def test_h_out_of_domain_corpus():
+def test_out_of_domain_corpus():
     docs = [
         _doc(
             "recipe.md",

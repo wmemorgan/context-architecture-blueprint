@@ -9,7 +9,6 @@ knowledge corpus is ready for AI.
 [![CI](https://github.com/wmemorgan/context-architecture-blueprint/actions/workflows/ci.yml/badge.svg)](https://github.com/wmemorgan/context-architecture-blueprint/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-134-brightgreen.svg)](#development--testing)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Lint: ruff](https://img.shields.io/badge/lint-ruff-261230.svg)](https://github.com/astral-sh/ruff)
 
@@ -40,12 +39,24 @@ You give it a sample of your own knowledge corpus; it returns:
 ## Quickstart
 
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/wmemorgan/context-architecture-blueprint.git
+cd context-architecture-blueprint
+python -m venv .venv && source .venv/bin/activate
+pip install -e .
 # Run the full analysis over the bundled sample corpus (no upload, no key):
-python -m cab.cli demo
+cab demo
 # Analyze your own folder of documents:
-python -m cab.cli analyze ./my-corpus
+cab analyze ./my-corpus
 ```
+
+To use it as a library without a clone:
+
+```bash
+pip install "git+https://github.com/wmemorgan/context-architecture-blueprint.git@v0.1.2"
+```
+
+`python -m cab.cli demo` and `python -m cab.cli analyze <dir>` are equivalent to the `cab`
+commands.
 
 `demo` runs in under a minute against the bundled sample corpus and prints the band plus the
 report URL. With no API key present it uses the deterministic mock judge (see
@@ -151,8 +162,8 @@ any disclosures to your users are yours to make. See
 
 The Context Architecture Blueprint ships as a **Python library and CLI** — that is the supported core.
 
-- **CLI** — `python -m cab.cli demo` runs the bundled sample corpus; `python -m cab.cli analyze <dir>` runs your own folder.
-- **Library** — call `cab.pipeline.run_on_files()` / `run_on_corpus()` from your own application and render with `build_render_contract()` or your own UI.
+- **CLI** — `cab demo` runs the bundled sample corpus; `cab analyze <dir>` runs your own folder (or `python -m cab.cli …`).
+- **Library** — call `cab.pipeline.run_on_files()` / `run_on_corpus()` from your own application and render with `cab.report.render.build_render_contract()` or your own UI.
 
 **Deployment is yours.** The framework makes no deployment assumptions and ships no hosting opinion. How you run it — batch, internal service, air-gapped, container, serverless — is your decision and your security and compliance posture to own.
 
@@ -177,8 +188,7 @@ artifact appears outside `examples/`. See the [developer guide](docs/developer-g
 ## Development & testing
 
 The full test suite is **hermetic** — it runs with a deterministic `MockJudge` and needs no API
-key or network: **134 tests** (122 engine-core + 12 reference-service), of which 5 live-judge
-tests skip unless `ANTHROPIC_API_KEY` is present.
+key or network. The 5 live-judge tests skip unless `ANTHROPIC_API_KEY` is present.
 
 ```bash
 pip install -r requirements-dev.txt
